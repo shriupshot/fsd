@@ -1,0 +1,141 @@
+To create a Node.js web server that handles dynamic content and serves files, you can use the http module to create a server, and the fs (file system) module to serve static files. For dynamic content, you can use query parameters, URL routing, or request bodies (for POST requests).
+
+Steps to Set Up the Server:
+Set up a basic Node.js server: Create a basic server that can respond to HTTP requests.
+
+Serve static files: Use the fs module to read and send files like HTML, CSS, or JavaScript.
+
+Handle dynamic content: Use URL parameters or request bodies to generate dynamic content.
+
+Here’s an example implementation:
+
+1. Create the server.js file (Main Node.js Server)
+javascript
+Copy code
+const http = require('http'); // Built-in module for creating the HTTP server
+const fs = require('fs'); // Built-in module for file system operations
+const path = require('path'); // Built-in module to handle file paths
+const url = require('url'); // Built-in module for URL handling
+
+const port = 3000; // Define the port for the server
+
+// Create the server
+const server = http.createServer((req, res) => {
+  // Parse the URL to handle routing
+  const parsedUrl = url.parse(req.url, true);
+
+  // Serve static files like HTML, CSS, JS
+  if (parsedUrl.pathname === '/' || parsedUrl.pathname === '/index.html') {
+    fs.readFile(path.join(__dirname, 'public', 'index.html'), 'utf-8', (err, data) => {
+      if (err) {
+        res.statusCode = 500;
+        res.end('Error reading index.html');
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(data);
+    });
+  } else if (parsedUrl.pathname === '/style.css') {
+    fs.readFile(path.join(__dirname, 'public', 'style.css'), 'utf-8', (err, data) => {
+      if (err) {
+        res.statusCode = 500;
+        res.end('Error reading style.css');
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/css' });
+      res.end(data);
+    });
+  } else if (parsedUrl.pathname === '/script.js') {
+    fs.readFile(path.join(__dirname, 'public', 'script.js'), 'utf-8', (err, data) => {
+      if (err) {
+        res.statusCode = 500;
+        res.end('Error reading script.js');
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'application/javascript' });
+      res.end(data);
+    });
+  }
+  
+  // Handle dynamic content, such as query parameters
+  else if (parsedUrl.pathname === '/greet') {
+    const name = parsedUrl.query.name || 'Guest'; // Use the query parameter `name`, default to 'Guest'
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end(`Hello, ${name}!`);
+  }
+
+  // Return 404 for unsupported paths
+  else {
+    res.statusCode = 404;
+    res.end('Page Not Found');
+  }
+});
+
+// Start the server and listen on the defined port
+server.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
+2. Create the public folder with static files
+In the same directory as server.js, create a public folder with the following files:
+
+index.html: The main HTML file to serve.
+style.css: Basic CSS for styling.
+script.js: A simple JavaScript file for the frontend.
+Example: index.html
+html
+Copy code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Node.js Server</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1>Welcome to the Node.js Server</h1>
+  <p>This page is served by a Node.js web server.</p>
+  <p>Enter your name to be greeted:</p>
+  <form action="/greet" method="get">
+    <input type="text" name="name" placeholder="Enter your name" />
+    <button type="submit">Greet Me</button>
+  </form>
+  <script src="/script.js"></script>
+</body>
+</html>
+Example: style.css
+css
+Copy code
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  text-align: center;
+  padding: 50px;
+}
+
+h1 {
+  color: #333;
+}
+
+form {
+  margin-top: 20px;
+}
+Example: script.js
+javascript
+Copy code
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('JavaScript loaded!');
+});
+3. Run the server
+To start the server, run the following command in your terminal from the project directory:
+
+bash
+Copy code
+node server.js
+Your server will start running at http://localhost:3000. When you access the root URL (/), it will serve the index.html file, and the form will allow users to enter their name. Upon submitting the form, the server will respond with a greeting based on the name parameter in the URL.
+
+Explanation:
+Serving Static Files: The server uses the fs module to read the files and send them as responses (HTML, CSS, JavaScript).
+Handling Dynamic Content: The server handles dynamic content using query parameters (e.g., /greet?name=John), which can be processed and used to generate a custom response.
+Error Handling: The server returns a 404 status code and message for unsupported paths.
+This setup provides a basic web server that serves both static files and dynamic content in response to user requests.

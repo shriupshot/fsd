@@ -1,0 +1,189 @@
+To create a simple Node.js server for an e-commerce application without using Express, you can use the built-in http and url modules to handle routing, and the fs module for file handling (or you can mock a database with JSON files).
+
+Here's how you can create the server with routes for managing products, orders, and users:
+
+1. Project Structure
+arduino
+Copy code
+ecommerce-server/
+│
+├── server.js       // Main server file
+├── products.json   // JSON file to store products
+├── orders.json     // JSON file to store orders
+└── users.json      // JSON file to store users
+2. server.js (Main Node.js Server)
+javascript
+Copy code
+const http = require('http'); // For creating the HTTP server
+const url = require('url'); // To parse the request URL
+const fs = require('fs'); // For reading and writing files
+const path = require('path'); // For handling file paths
+
+const port = 3000; // The port for the server to listen on
+
+// Helper function to send JSON responses
+function sendJsonResponse(res, statusCode, data) {
+  res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(data));
+}
+
+// Create the HTTP server
+const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url, true); // Parse the URL
+  const method = req.method; // Get the HTTP method (GET, POST, etc.)
+  const pathName = parsedUrl.pathname; // Get the path (route)
+
+  // Handle Products Route
+  if (pathName === '/products' && method === 'GET') {
+    // Read products from the products.json file
+    fs.readFile(path.join(__dirname, 'products.json'), 'utf-8', (err, data) => {
+      if (err) {
+        sendJsonResponse(res, 500, { error: 'Failed to load products.' });
+        return;
+      }
+      sendJsonResponse(res, 200, JSON.parse(data));
+    });
+  }
+  
+  // Handle Single Product Route
+  else if (pathName.startsWith('/products/') && method === 'GET') {
+    const productId = pathName.split('/')[2]; // Extract product ID from URL
+    fs.readFile(path.join(__dirname, 'products.json'), 'utf-8', (err, data) => {
+      if (err) {
+        sendJsonResponse(res, 500, { error: 'Failed to load products.' });
+        return;
+      }
+      const products = JSON.parse(data);
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        sendJsonResponse(res, 200, product);
+      } else {
+        sendJsonResponse(res, 404, { error: 'Product not found.' });
+      }
+    });
+  }
+
+  // Handle Create Product (POST) Route
+  else if (pathName === '/products' && method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk;
+    });
+    req.on('end', () => {
+      const newProduct = JSON.parse(body);
+      fs.readFile(path.join(__dirname, 'products.json'), 'utf-8', (err, data) => {
+        if (err) {
+          sendJsonResponse(res, 500, { error: 'Failed to load products.' });
+          return;
+        }
+        const products = JSON.parse(data);
+        newProduct.id = (products.length + 1).toString(); // Assign a simple ID
+        products.push(newProduct);
+        fs.writeFile(path.join(__dirname, 'products.json'), JSON.stringify(products), 'utf-8', (err) => {
+          if (err) {
+            sendJsonResponse(res, 500, { error: 'Failed to save product.' });
+            return;
+          }
+          sendJsonResponse(res, 201, newProduct);
+        });
+      });
+    });
+  }
+
+  // Handle Orders Route
+  else if (pathName === '/orders' && method === 'GET') {
+    fs.readFile(path.join(__dirname, 'orders.json'), 'utf-8', (err, data) => {
+      if (err) {
+        sendJsonResponse(res, 500, { error: 'Failed to load orders.' });
+        return;
+      }
+      sendJsonResponse(res, 200, JSON.parse(data));
+    });
+  }
+
+  // Handle Users Route
+  else if (pathName === '/users' && method === 'GET') {
+    fs.readFile(path.join(__dirname, 'users.json'), 'utf-8', (err, data) => {
+      if (err) {
+        sendJsonResponse(res, 500, { error: 'Failed to load users.' });
+        return;
+      }
+      sendJsonResponse(res, 200, JSON.parse(data));
+    });
+  }
+
+  // Handle 404 for unsupported routes
+  else {
+    sendJsonResponse(res, 404, { error: 'Route not found.' });
+  }
+});
+
+// Start the server
+server.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
+3. Example Data Files (Mock Database)
+products.json
+json
+Copy code
+[
+  {
+    "id": "1",
+    "name": "Product 1",
+    "price": 100,
+    "description": "This is a great product."
+  },
+  {
+    "id": "2",
+    "name": "Product 2",
+    "price": 150,
+    "description": "This is another great product."
+  }
+]
+orders.json
+json
+Copy code
+[
+  {
+    "id": "1",
+    "userId": "1",
+    "productId": "1",
+    "quantity": 2,
+    "total": 200
+  },
+  {
+    "id": "2",
+    "userId": "2",
+    "productId": "2",
+    "quantity": 1,
+    "total": 150
+  }
+]
+users.json
+json
+Copy code
+[
+  {
+    "id": "1",
+    "name": "User 1",
+    "email": "user1@example.com"
+  },
+  {
+    "id": "2",
+    "name": "User 2",
+    "email": "user2@example.com"
+  }
+]
+4. Running the Server
+Ensure you have node.js installed.
+Create the server.js file and place the products.json, orders.json, and users.json files in the same directory.
+Run the server:
+bash
+Copy code
+node server.js
+5. Accessing the Server
+GET /products: Fetch a list of products.
+GET /products/{id}: Fetch a single product by its ID.
+POST /products: Create a new product (send product data as JSON in the body).
+GET /orders: Fetch a list of orders.
+GET /users: Fetch a list of users.

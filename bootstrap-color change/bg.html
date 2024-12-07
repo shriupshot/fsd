@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Color Changer</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .color-container {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.3s;
+    }
+
+    .btn-group {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+
+<body class="bg-light">
+
+  <div id="colorContainer" class="color-container bg-light text-center">
+    <h1 class="text-white">Click a Button to Change Background</h1>
+  </div>
+
+  <div class="btn-group" role="group">
+    <button class="btn btn-primary" onclick="changeColor('bg-primary')">Primary</button>
+    <button class="btn btn-secondary" onclick="changeColor('bg-secondary')">Secondary</button>
+    <button class="btn btn-success" onclick="changeColor('bg-success')">Success</button>
+    <button class="btn btn-danger" onclick="changeColor('bg-danger')">Danger</button>
+    <button class="btn btn-warning text-dark" onclick="changeColor('bg-warning')">Warning</button>
+    <button class="btn btn-info text-dark" onclick="changeColor('bg-info')">Info</button>
+    <button class="btn btn-light text-dark" onclick="changeColor('bg-light')">Light</button>
+    <button class="btn btn-dark" onclick="changeColor('bg-dark')">Dark</button>
+    <button class="btn btn-white text-dark" onclick="changeColor('bg-white')">White</button>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function changeColor(colorClass) {
+      const container = document.getElementById('colorContainer');
+      container.className = `color-container ${colorClass}`;
+    }
+  </script>
+</body>
+
+</html>

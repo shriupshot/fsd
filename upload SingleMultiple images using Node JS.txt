@@ -1,0 +1,100 @@
+Step 1: Install Required Packages
+Run the following command to install the necessary packages:
+
+bash
+Copy code
+npm install express multer body-parser
+Step 2: File Structure
+php
+Copy code
+project-folder/
+│
+├── server.js      # Main Node.js file
+├── public/        # Folder to serve static files
+│   └── uploads/   # Folder to store uploaded images
+└── views/         # Folder to store HTML files
+    └── upload.html
+Step 3: Code Implementation
+server.js
+javascript
+Copy code
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+
+const app = express();
+const PORT = 3000;
+
+// Configure Multer Storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/uploads/"); // Directory for uploaded files
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique file names
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// Middleware to serve static files
+app.use(express.static("public"));
+
+// Serve the upload form
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/views/upload.html");
+});
+
+// Single file upload route
+app.post("/upload-single", upload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).send("No file uploaded.");
+  res.send(`Single file uploaded successfully: ${req.file.filename}`);
+});
+
+// Multiple files upload route
+app.post("/upload-multiple", upload.array("images", 5), (req, res) => {
+  if (!req.files || req.files.length === 0) return res.status(400).send("No files uploaded.");
+  const fileNames = req.files.map((file) => file.filename).join(", ");
+  res.send(`Multiple files uploaded successfully: ${fileNames}`);
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+views/upload.html
+html
+Copy code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Upload</title>
+</head>
+<body>
+  <h1>Upload Images</h1>
+  
+  <!-- Single Image Upload Form -->
+  <form action="/upload-single" method="post" enctype="multipart/form-data">
+    <label for="image">Upload Single Image:</label>
+    <input type="file" name="image" id="image" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <hr>
+
+  <!-- Multiple Images Upload Form -->
+  <form action="/upload-multiple" method="post" enctype="multipart/form-data">
+    <label for="images">Upload Multiple Images (Max 5):</label>
+    <input type="file" name="images" id="images" multiple required>
+    <button type="submit">Upload</button>
+  </form>
+</body>
+</html>
+Step 4: Run the Application
+Start the server:
+bash
+Copy code
+node server.js
+Open your browser and navigate to: http://localhost:3000.

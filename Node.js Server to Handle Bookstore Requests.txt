@@ -1,0 +1,216 @@
+
+To build a basic Node.js server for handling bookstore operations, including retrieving book information and adding new books, we'll use the built-in http and fs modules to create a server and store the data in a JSON file. Below is an example implementation of such a server.
+
+1. Project Structure
+go
+Copy code
+bookstore-server/
+│
+├── server.js        // Main server file
+├── books.json       // JSON file to store books information
+└── package.json     // For managing the project dependencies (optional)
+2. Install Node.js (If not already installed)
+If you haven't installed Node.js yet, you can download it from nodejs.org.
+
+3. Create the server.js file (Main Node.js Server)
+javascript
+Copy code
+const http = require('http'); // For creating the HTTP server
+const url = require('url'); // To parse the request URL
+const fs = require('fs'); // For reading and writing files
+const path = require('path'); // For handling file paths
+
+const port = 3000; // The port for the server to listen on
+
+// Helper function to send JSON responses
+function sendJsonResponse(res, statusCode, data) {
+  res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(data));
+}
+
+// Create the HTTP server
+const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url, true); // Parse the URL
+  const method = req.method; // Get the HTTP method (GET, POST, etc.)
+  const pathName = parsedUrl.pathname; // Get the path (route)
+
+  // Handle GET request to retrieve all books
+  if (pathName === '/books' && method === 'GET') {
+    // Read books from the books.json file
+    fs.readFile(path.join(__dirname, 'books.json'), 'utf-8', (err, data) => {
+      if (err) {
+        sendJsonResponse(res, 500, { error: 'Failed to load books.' });
+        return;
+      }
+      sendJsonResponse(res, 200, JSON.parse(data));
+    });
+  }
+
+  // Handle GET request to retrieve a single book by ID
+  else if (pathName.startsWith('/books/') && method === 'GET') {
+    const bookId = pathName.split('/')[2]; // Extract book ID from URL
+    fs.readFile(path.join(__dirname, 'books.json'), 'utf-8', (err, data) => {
+      if (err) {
+        sendJsonResponse(res, 500, { error: 'Failed to load books.' });
+        return;
+      }
+      const books = JSON.parse(data);
+      const book = books.find(b => b.id === bookId);
+      if (book) {
+        sendJsonResponse(res, 200, book);
+      } else {
+        sendJsonResponse(res, 404, { error: 'Book not found.' });
+      }
+    });
+  }
+
+  // Handle POST request to add a new book
+  else if (pathName === '/books' && method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk;
+    });
+    req.on('end', () => {
+      const newBook = JSON.parse(body); // Parse the incoming book data
+      fs.readFile(path.join(__dirname, 'books.json'), 'utf-8', (err, data) => {
+        if (err) {
+          sendJsonResponse(res, 500, { error: 'Failed to load books.' });
+          return;
+        }
+        const books = JSON.parse(data);
+        newBook.id = (books.length + 1).toString(); // Generate a simple unique ID
+        books.push(newBook);
+        fs.writeFile(path.join(__dirname, 'books.json'), JSON.stringify(books, null, 2), 'utf-8', (err) => {
+          if (err) {
+            sendJsonResponse(res, 500, { error: 'Failed to save book.' });
+            return;
+          }
+          sendJsonResponse(res, 201, newBook); // Respond with the newly created book
+        });
+      });
+    });
+  }
+
+  // Handle 404 for unsupported routes
+  else {
+    sendJsonResponse(res, 404, { error: 'Route not found.' });
+  }
+});
+
+// Start the server
+server.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
+4. Create the books.json file (Mock Database)
+This file will store the books as an array of objects. Each book will have an id, title, author, and price.
+
+books.json
+json
+Copy code
+[
+  {
+    "id": "1",
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "price": 10.99
+  },
+  {
+    "id": "2",
+    "title": "1984",
+    "author": "George Orwell",
+    "price": 8.99
+  },
+  {
+    "id": "3",
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "price": 12.99
+  }
+]
+5. Running the Server
+Ensure you have node.js installed.
+Create the server.js file and place the books.json file in the same directory.
+In your terminal, navigate to the project folder and run the server:
+bash
+Copy code
+node server.js
+The server will start running at http://localhost:3000.
+
+6. Accessing the Server
+GET /books: Fetch a list of all books.
+
+Example: curl http://localhost:3000/books
+GET /books/{id}: Fetch a single book by its ID.
+
+Example: curl http://localhost:3000/books/1
+POST /books: Add a new book. You need to send a JSON body with the book details.
+
+Example (curl request):
+bash
+Copy code
+curl -X POST http://localhost:3000/books -H "Content-Type: application/json" -d '{"title": "Moby Dick", "author": "Herman Melville", "price": 15.99}'
+Example Requests and Responses:
+GET All Books:
+bash
+Copy code
+curl http://localhost:3000/books
+Response:
+
+json
+Copy code
+[
+  {
+    "id": "1",
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "price": 10.99
+  },
+  {
+    "id": "2",
+    "title": "1984",
+    "author": "George Orwell",
+    "price": 8.99
+  },
+  {
+    "id": "3",
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "price": 12.99
+  }
+]
+GET Single Book by ID:
+bash
+Copy code
+curl http://localhost:3000/books/1
+Response:
+
+json
+Copy code
+{
+  "id": "1",
+  "title": "The Great Gatsby",
+  "author": "F. Scott Fitzgerald",
+  "price": 10.99
+}
+POST Add a New Book:
+bash
+Copy code
+curl -X POST http://localhost:3000/books -H "Content-Type: application/json" -d '{"title": "Moby Dick", "author": "Herman Melville", "price": 15.99}'
+Response:
+
+json
+Copy code
+{
+  "id": "4",
+  "title": "Moby Dick",
+  "author": "Herman Melville",
+  "price": 15.99
+}
+Explanation:
+Routes: The server provides three routes:
+/books (GET): Retrieves all books.
+/books/{id} (GET): Retrieves a specific book by its ID.
+/books (POST): Adds a new book.
+File-based Storage: The server uses a simple JSON file (books.json) to store and retrieve book data.
+Dynamic Book IDs: When adding a new book, the server assigns a unique ID based on the current number of books.
+Error Handling: The server handles errors like missing books or invalid routes.

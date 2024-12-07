@@ -1,0 +1,226 @@
+AIM:
+To build a basic React app that allows users to submit custom messages and displays each submitted message in a list format.
+PROCEDURE:
+
+Initialize a React app using create-react-app.
+Create an input form with a button for users to submit messages.
+Store each message in the React state and update the list each time a new message is submitted.
+Display all submitted messages in a list below the form.
+Optionally, style the form and message list for better user experience.
+
+CODING:
+1)Setup Project
+Run the following commands in your terminal to create a React app:
+
+npx create-react-app message-app cd message-app
+2)App Component
+Replace the content of App.js with the following code:
+
+// App.js
+import React, { useState } from 'react'; import './App.css';
+
+function App() {
+const [message, setMessage] = useState(''); const [messages, setMessages] = useState([]);
+
+// Function to handle message submission const handleSubmit = (e) => {
+
+e.preventDefault(); if (message.trim()) {
+setMessages([...messages, message]); setMessage(''); // Clear the input field
+}
+};
+
+return (
+<div className="App">
+<h1>Message Display App</h1>
+<form onSubmit={handleSubmit}>
+<input type="text"
+placeholder="Enter your message" value={message}
+onChange={(e) => setMessage(e.target.value)}
+/>
+<button type="submit">Submit</button>
+</form>
+<div>
+<h2>Messages</h2>
+<ul>
+{messages.map((msg, index) => (
+<li key={index}>{msg}</li>
+))}
+</ul>
+</div>
+</div>
+);
+}
+
+export default App;
+
+3)Styling:
+Add the following CSS to App.css for basic styling:
+/* App.css */
+.App {
+text-align: center; padding: 20px;
+}
+
+input[type="text"] { padding: 10px; margin-right: 10px;
+
+width: 200px;
+}
+
+button { padding: 10px;
+}
+
+ul {
+list-style-type: none; padding: 0;
+}
+
+li {
+background: #f0f0f0; margin: 5px 0; padding: 10px; border-radius: 5px;
+}
+
+4)Run the App
+Start the React app:
+
+
+or
+(CHATGPT)
+
+To build a basic React app that allows users to submit custom messages and displays each submitted message in a list format, you can follow these steps:
+
+1. Set Up a New React App
+First, create a new React app using create-react-app (if you haven't done this already):
+
+bash
+Copy code
+npx create-react-app message-app
+cd message-app
+2. Basic React App Structure
+After setting up the React app, we will create a form where users can enter a message, submit it, and display the list of messages.
+
+Project Structure:
+java
+Copy code
+message-app/
+├── public/
+├── src/
+│   ├── App.js         // Main component
+│   ├── App.css        // Styling for the app
+│   └── index.js       // Entry point for React
+└── package.json
+3. Edit App.js
+Now, let's edit App.js to handle the user input and display the list of messages.
+
+javascript
+Copy code
+import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [message, setMessage] = useState('');  // Holds the current input message
+  const [messages, setMessages] = useState([]);  // Stores the list of submitted messages
+
+  // Handle input change
+  const handleInputChange = (event) => {
+    setMessage(event.target.value);
+  };
+
+  // Handle form submission
+  const handleFormSubmit = (event) => {
+    event.preventDefault(); // Prevent page refresh on form submission
+    if (message) {
+      setMessages([...messages, message]); // Add the new message to the list
+      setMessage(''); // Clear the input field after submission
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Message Board</h1>
+      
+      {/* Form to submit new message */}
+      <form onSubmit={handleFormSubmit}>
+        <input
+          type="text"
+          value={message}
+          onChange={handleInputChange}
+          placeholder="Enter your message"
+          required
+        />
+        <button type="submit">Submit</button>
+      </form>
+
+      {/* List of submitted messages */}
+      <ul>
+        {messages.map((msg, index) => (
+          <li key={index}>{msg}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+Explanation of Code:
+useState: We use the useState hook to manage two states:
+
+message: The current value of the input field.
+messages: An array that stores all submitted messages.
+handleInputChange: This function updates the message state whenever the input value changes.
+
+handleFormSubmit: This function is triggered when the form is submitted:
+
+It prevents the default form behavior (page refresh).
+It adds the current message to the messages list.
+It clears the input field after submitting the message.
+Displaying Messages: The messages state is mapped over to generate an unordered list (<ul>), where each message is displayed in a <li> element.
+
+4. Style the App
+You can also add some basic styles in App.css to make the app look better.
+
+css
+Copy code
+.App {
+  text-align: center;
+  padding: 20px;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 10px;
+  width: 300px;
+  margin-right: 10px;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 16px;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  padding: 8px;
+  background-color: #f1f1f1;
+  margin: 5px 0;
+  border-radius: 5px;
+}
+5. Run the Application
+Now, you can run the application using the following command:
+
+bash
+Copy code
+npm start
+This will open the app in your default web browser, usually at http://localhost:3000. You will see:
+
+A text input field where you can enter your message.
+A submit button to add the message to the list.
+A list of submitted messages below the input field.
+6. Example Behavior:
+User enters a message in the input field, for example: "Hello, world!".
+User clicks "Submit" or presses Enter.
+The message appears in the list below, and the input field is cleared for the next message.
+Submitted messages are stored in the list and displayed as <li> elements.
